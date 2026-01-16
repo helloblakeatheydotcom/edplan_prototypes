@@ -50,11 +50,37 @@
     .section-content{ padding:12px 0 6px; }
     .is-collapsed .section-content{ display:none; }
     .is-collapsed .chev{ transform:rotate(-90deg); }
-    .qf.is-collapsed + .section-sep { display: none; } /* Hide sep if collapsed */
+    .qf.is-collapsed + .section-sep { display: none; }
     .qf-inner{ padding-left:var(--indent); }
     
     /* UPDATED: Active Filters in Toolbar */
-    .active-filters{ font-size:13px; color:var(--muted); margin:0; padding-bottom:0; flex-grow:1; display:flex; align-items:center; }
+    .active-filters{ 
+        font-size: 13px; 
+        margin: 0; 
+        padding-bottom: 0; 
+        flex-grow: 1; 
+        display: flex; 
+        align-items: center; 
+        flex-wrap: wrap; 
+        line-height: 1.5;
+    }
+    .af-label { 
+        color: var(--text); /* Darker */
+        font-weight: 800; 
+        margin-right: 12px; 
+        text-transform: uppercase;
+        font-size: 11px;
+        letter-spacing: 0.5px;
+    }
+    .af-value { 
+        color: #111827; 
+        font-weight: 500; 
+    }
+    .af-pipe { 
+        color: #D1D5DB; 
+        margin: 0 12px; 
+        font-weight: 300; 
+    }
 
     .filters-row{ display:flex; align-items:flex-end; gap:18px; flex-wrap:wrap; padding-top:4px; padding-bottom:6px; }
     .field{ min-width:170px; }
@@ -111,12 +137,30 @@
     .form-group{ margin-bottom:16px; }
     .radio-group{ display:flex; gap:20px; margin-top:8px; }
     .radio-group label{ display:flex; align-items:center; gap:6px; cursor:pointer; font-size:14px; }
-    .checkbox-label{ display:flex; align-items:center; gap:8px; font-size:14px; cursor:pointer; }
-    .signature-pad{ height:100px; border:1px dashed #9CA3AF; background:#F9FAFB; display:flex; align-items:center; justify-content:center; color:#9CA3AF; border-radius:4px; margin-top:6px; }
     .btn-cancel{ padding:8px 16px; border:none; background:#127C49; color:#fff; border-radius:4px; cursor:pointer; font-weight:700; text-transform:uppercase; }
     .btn-cancel:hover{ background:#0e6239; }
     .btn-primary{ padding:8px 16px; border:none; background:#127C49; color:#fff; border-radius:4px; cursor:pointer; font-weight:700; text-transform:uppercase; }
     .btn-primary:hover{ background:#0e6239; }
+    
+    /* UPDATED: Modal Checkbox Stacking */
+    .checkbox-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 16px; /* More space */
+        margin-top: 10px;
+    }
+    .checkbox-label { 
+        display: flex; 
+        align-items: flex-start; /* Top align */
+        gap: 10px; 
+        font-size: 14px; 
+        cursor: pointer; 
+        line-height: 1.4;
+    }
+    .checkbox-label input { 
+        margin-top: 3px; 
+    }
+
     .modal-student-info { background: #F9FAFB; border: 1px solid var(--line); border-radius: 4px; padding: 12px; margin-bottom: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px 24px; font-size: 13px; }
     .info-row { display: flex; flex-direction: column; gap: 2px; }
     .info-label { font-weight: 700; color: var(--muted); font-size: 11px; text-transform: uppercase; }
@@ -124,7 +168,6 @@
     .services-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 13px; }
     .services-table th { text-align: left; background: #F3F4F6; padding: 8px 10px; border: 1px solid var(--line); font-weight: 700; color: var(--muted); font-size:11px; text-transform:uppercase; }
     .services-table td { padding: 8px 10px; border: 1px solid var(--line); vertical-align:top; }
-    .services-table td:last-child { white-space:nowrap; }
     .svc-name{ font-weight:700; color:var(--nav); }
     @media (max-width: 900px){ .section-actions{ width:100%; margin-left:0; justify-content:flex-end; } .search{ min-width:220px; } }
     @media (max-width: 640px){ .header-row{ flex-direction:column; } .header-actions{ margin-left:0; } .section-header{ flex-wrap:wrap; } .results-toolbar{ flex-direction:column; align-items:stretch; } .search{ min-width:unset; width:100%; } .field{ min-width:140px; flex:1; } .qf-inner{ padding-left:16px; } }
@@ -180,7 +223,7 @@
             <div class="section-actions">
               <button class="action-linkbtn" type="button" onclick="applyFilters()">APPLY FILTERS</button>
               <button class="action-linkbtn" type="button" onclick="clearFilters()">CLEAR FILTERS</button>
-              <button class="action-linkbtn" type="button" onclick="alert('Advanced filters')">ADVANCED FILTERS</button>
+              <button class="action-linkbtn" type="button" onclick="openAdvancedFilters()">ADVANCED FILTERS</button>
             </div>
           </div>
 
@@ -362,6 +405,76 @@
     </div>
   </div>
 
+  <div id="advancedFiltersModal" class="modal-overlay" style="display:none;">
+    <div class="modal-content" style="width: 600px;">
+      <div class="modal-header">
+        <div class="modal-title">Advanced Filters</div>
+        <button type="button" class="close-btn" onclick="closeAdvancedModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        
+        <div class="modal-subtitle">IEP Disposition</div>
+        <div class="form-group">
+          <div class="label">IEPs Approved/Denied Within</div>
+          <div style="display: flex; gap: 20px;">
+            <div class="select-wrap" style="flex: 1;">
+              <select id="advStatus" class="underline-select">
+                <option value="Approved">Approved</option>
+                <option value="Denied">Denied</option>
+              </select>
+            </div>
+            
+            <div class="select-wrap" style="flex: 1;">
+              <select id="advTimeframe" class="underline-select" onchange="toggleCustomDates(this.value)">
+                <option value="Current School Year">Current School Year</option>
+                <option value="Past 30 Days">Past 30 Days</option>
+                <option value="Past 60 Days">Past 60 Days</option>
+                <option value="Past 90 Days">Past 90 Days</option>
+                <option value="Past 180 Days">Past 180 Days</option>
+                <option value="Custom">Custom Date Range</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div id="customDateRow" class="form-group" style="display: none; background: #f9fafb; padding: 15px; border: 1px solid #e5e7eb; border-radius: 4px;">
+          <div class="label" style="margin-bottom: 8px;">Custom Range (Limit: Last 365 Days)</div>
+          <div style="display: flex; gap: 20px;">
+            <div style="flex: 1;">
+              <label class="label" style="font-size: 11px;">Begin Date</label>
+              <input type="date" id="advStartDate" class="underline-input" style="padding: 4px 0;">
+            </div>
+            <div style="flex: 1;">
+              <label class="label" style="font-size: 11px;">End Date</label>
+              <input type="date" id="advEndDate" class="underline-input" style="padding: 4px 0;">
+            </div>
+          </div>
+        </div>
+
+        <div class="section-sep" style="margin: 20px 0;"></div>
+
+        <div class="modal-subtitle">Additional Criteria</div>
+        <div class="form-group">
+          <div class="checkbox-stack">
+              <label class="checkbox-label">
+                <input type="checkbox" id="chkMedicaid"> 
+                <span>Only include <strong>Medicaid eligible</strong> students</span>
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" id="chkConsent"> 
+                <span>Only include students with currently valid <strong>Medicaid Parent Consent</strong></span>
+              </label>
+          </div>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-cancel" onclick="closeAdvancedModal()">Cancel</button>
+        <button type="button" class="btn-primary" onclick="applyAdvancedFilters()">Apply Filters</button>
+      </div>
+    </div>
+  </div>
+
   <div id="detailsModal" class="modal-overlay" style="display:none;">
     <div class="modal-content">
       <div class="modal-header">
@@ -495,19 +608,6 @@
         return true;
       });
 
-      // Update Active Filters Display
-      const activeParts = [];
-      if (fType) activeParts.push(`Type = ${fType}`);
-      if (fServiceOptions.length > 0) activeParts.push(`Services = ${fServiceOptions.join(', ')}`);
-      if (fStatus) activeParts.push(`Status = ${fStatus}`);
-      if (fDateRange) activeParts.push(`Date Range = ${fDateRange}`);
-      if (fYear) activeParts.push(`Year = ${fYear}`);
-      if (fSearch) activeParts.push(`Search = "${fSearch}"`);
-
-      const displayEl = document.getElementById('activeFiltersDisplay');
-      displayEl.style.display = activeParts.length > 0 ? 'flex' : 'none';
-      displayEl.innerHTML = activeParts.length > 0 ? `Active Filters: <strong>&nbsp;${activeParts.join(', ')}</strong>` : '';
-
       sortStudents(currentData);
       currentPage = 1;
       renderTable();
@@ -586,19 +686,7 @@
       }
     }
 
-    function clearFilters() {
-      document.getElementById('filterStatus').value = "";
-      document.getElementById('filterType').value = "";
-      const checkboxes = document.querySelectorAll('#serviceMenu input');
-      checkboxes.forEach(cb => cb.checked = false);
-      updateServiceLabel();
-      document.getElementById('filterDateRange').value = "";
-      document.getElementById('filterYear').value = "";
-      document.getElementById('searchInput').value = "";
-      applyFilters();
-    }
-
-    // UI: Multi-select dropdown
+    // --- UI: Multi-select dropdown ---
     function toggleServiceMenu() {
       const menu = document.getElementById('serviceMenu');
       menu.style.display = menu.style.display === 'none' ? 'flex' : 'none';
@@ -617,7 +705,7 @@
       }
     });
 
-    // --- UI: Expand/Collapse (Restored) ---
+    // --- UI: Expand/Collapse Logic (Restored) ---
     (function(){
       const root = document.getElementById("quickFilters");
       const title = root.querySelector(".section-title");
@@ -634,9 +722,8 @@
       });
     })();
 
-    // --- DETAILS MODAL (View Only) ---
+    // --- MODAL LOGIC (Shared) ---
     function openDetailsModal(id) {
-      // Loose equality to handle string vs number ID
       const s = allStudents.find(st => st.id == id);
       if(!s) return;
       document.getElementById('dName').textContent = `${s.first} ${s.last}`;
@@ -652,25 +739,15 @@
         tbody.appendChild(tr);
       });
 
-      // Logic: If status is Returned or Resubmitted, the Physician Response was "Denied"
-      let displayResponse = s.status;
-      let showReason = (s.status === 'Denied');
-
-      if (['Denied', 'Returned', 'Resubmitted', 'Superseded'].includes(s.status)) {
-        displayResponse = 'Denied';
-        showReason = true;
-      }
-
-      document.getElementById('dStatus').textContent = displayResponse;
+      document.getElementById('dStatus').textContent = s.status;
       document.getElementById('dResponseDate').textContent = s.responseDate || "--";
       document.getElementById('dReason').textContent = s.denialReason || "--";
-      document.getElementById('dReasonRow').style.visibility = showReason ? 'visible' : 'hidden';
+      document.getElementById('dReasonRow').style.visibility = (s.status === 'Denied') ? 'visible' : 'hidden';
 
       document.getElementById('detailsModal').style.display = 'flex';
     }
     function closeDetailsModal() { document.getElementById('detailsModal').style.display = 'none'; }
 
-    // --- ACTION MODAL (Resubmit/Return) ---
     function openModal(id){
       currentStudentId = id;
       const s = allStudents.find(st => st.id == id);
@@ -696,15 +773,8 @@
 
     // --- OPEN IEP DOCUMENT ---
     function openIEP(id) {
-        // Find the student (loose equality for string vs number ids)
         const s = allStudents.find(st => st.id == id);
-        
-        if (!s) {
-            console.error("Student not found for ID:", id);
-            return;
-        }
-
-        // Create the URL parameters
+        if (!s) return;
         const params = new URLSearchParams({
             name: s.first + ' ' + s.last,
             id: s.id,
@@ -712,8 +782,6 @@
             dates: s.dateRange,
             services: s.services
         });
-
-        // Open in new tab
         window.open('IEP_Document.html?' + params.toString(), '_blank');
     }
 
@@ -739,42 +807,110 @@
         } else {
           s.status = 'Returned'; 
         }
-        saveData(); // <--- Syncs with Physician
+        saveData(); // Syncs with Physician
         applyFilters();
       }
     }
 
-    // --- SIMULATE NEW IEP LOGIC (The "File Plus" Button) ---
+    // --- SIMULATE NEW IEP LOGIC ---
     function simulateNewIEP(oldId) {
-        console.log("Clicked simulate on ID:", oldId);
-        // Loose equality to handle string vs number mismatch
         const oldIndex = allStudents.findIndex(s => s.id == oldId);
-        if (oldIndex === -1) {
-            console.error("Could not find student with ID:", oldId);
-            return;
-        }
+        if (oldIndex === -1) return;
 
-        // 1. Mark old record as SUPERSEDED
         allStudents[oldIndex].status = "Superseded";
 
-        // 2. Create the NEW "Revision" record (Clone and clean)
         const newRecord = JSON.parse(JSON.stringify(allStudents[oldIndex]));
-        
-        // Generate new ID (String format to match)
         newRecord.id = Math.floor(100000 + Math.random() * 900000).toString(); 
         newRecord.status = "Pending"; 
         newRecord.type = "Revision"; 
         newRecord.denialReason = null; 
         newRecord.responseDate = null;
         
-        // Add to top of list
         allStudents.unshift(newRecord);
-
-        // 3. Save and Refresh
         saveData(); 
         applyFilters(); 
-
         alert(`New Revision Created!\n\nOld ID ${oldId} is now Superseded.\nNew ID ${newRecord.id} is Pending.`);
+    }
+
+    // --- ADVANCED FILTERS LOGIC (UPDATED) ---
+    function openAdvancedFilters() {
+        const today = new Date();
+        const lastYear = new Date();
+        lastYear.setDate(today.getDate() - 365);
+        const dateStr = lastYear.toISOString().split('T')[0];
+        document.getElementById('advStartDate').min = dateStr;
+        document.getElementById('advEndDate').min = dateStr;
+        document.getElementById('advancedFiltersModal').style.display = 'flex';
+    }
+
+    function closeAdvancedModal() {
+        document.getElementById('advancedFiltersModal').style.display = 'none';
+    }
+
+    function toggleCustomDates(val) {
+        const row = document.getElementById('customDateRow');
+        if (val === 'Custom') {
+            row.style.display = 'block';
+        } else {
+            row.style.display = 'none';
+        }
+    }
+
+    function applyAdvancedFilters() {
+        // 1. Gather values
+        const status = document.getElementById('advStatus').value;
+        const timeframe = document.getElementById('advTimeframe').value;
+        const isMedicaid = document.getElementById('chkMedicaid').checked;
+        const isConsent = document.getElementById('chkConsent').checked;
+        
+        // 2. Perform "Semi-Real" Filtering
+        currentData = allStudents.filter(s => {
+            // Map "Approved" -> "Signed", "Denied" -> "Denied"
+            if (status === 'Approved' && s.status !== 'Signed') return false;
+            if (status === 'Denied' && s.status !== 'Denied') return false;
+
+            // Medicaid Checkbox
+            if (isMedicaid && s.medicaid !== 'Yes') return false;
+
+            // Consent Checkbox (Fake logic: if medicaid is yes, assume consent for demo)
+            if (isConsent && s.medicaid !== 'Yes') return false; 
+
+            return true;
+        });
+
+        // 3. Build the display string with Pipes
+        let parts = [];
+        
+        parts.push(`Disposition: <span class="af-value">${status}</span>`);
+        
+        if (timeframe === 'Custom') {
+            const start = document.getElementById('advStartDate').value;
+            const end = document.getElementById('advEndDate').value;
+            if(start && end) parts.push(`Date: <span class="af-value">${start} to ${end}</span>`);
+            else parts.push(`Date: <span class="af-value">Custom Range</span>`);
+        } else {
+            parts.push(`Timeframe: <span class="af-value">${timeframe}</span>`);
+        }
+
+        if (isMedicaid) parts.push(`<span class="af-value">Medicaid Eligible Only</span>`);
+        if (isConsent) parts.push(`<span class="af-value">Valid Consent Only</span>`);
+
+        // 4. Render
+        const displayEl = document.getElementById('activeFiltersDisplay');
+        const pipe = `<span class="af-pipe">|</span>`;
+        
+        displayEl.innerHTML = `<span class="af-label">Active Filters:</span>` + parts.join(pipe);
+        displayEl.style.display = 'flex';
+
+        // 5. Close and Refresh Table
+        closeAdvancedModal();
+        
+        // Sort and Render
+        sortStudents(currentData);
+        currentPage = 1;
+        renderTable(); 
+        
+        document.getElementById('showTotal').innerText = currentData.length;
     }
 
     // Start

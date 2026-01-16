@@ -87,9 +87,10 @@
     .denied{ color:#B91C1C; background:#FEE2E2; }
     .resubmitted{ color:#B45309; background:#FEF3C7; } 
     .superseded{ color:#334155; background:#E2E8F0; }
-    .icon-col{ width:72px; text-align:center; }
+    .icon-col{ text-align:center; white-space:nowrap; width:1%; }
     .icon-btn{ border:none; background:transparent; cursor:pointer; color:#4B5563; padding:4px; border-radius:8px; }
     .icon-btn:hover{ background:#F3F4F6; color:#111827; }
+    .icon-placeholder{ display:inline-block; width:24px; text-align:center; color:#ccc; padding:4px; }
     .table-footer{ display:flex; align-items:center; gap:14px; padding:12px 2px 10px; color:var(--muted); font-size:12px; }
     .footer-left{ display:flex; align-items:center; gap:8px; }
     .pager{ margin-left:auto; display:flex; align-items:center; gap:8px; }
@@ -262,8 +263,7 @@
                 <th>IEP Type</th>
                 <th>IEP Date Range</th>
                 <th>IEP Services</th>
-                <th class="icon-col">View IEP Document</th>
-                <th class="icon-col">Respond</th>
+                <th class="icon-col">Actions</th>
               </tr>
             </thead>
             <tbody id="tableBody"></tbody>
@@ -489,7 +489,7 @@
         const canRespond = (s.status === 'Pending' || s.status === 'Resubmitted');
         const respondBtn = canRespond 
             ? `<button class="icon-btn" type="button" title="Respond" onclick="openModal('${s.id}')"><i data-lucide="pencil"></i></button>`
-            : `<span style="color:#ccc;">--</span>`;
+            : `<span class="icon-placeholder">--</span>`;
 
         tr.innerHTML = `
           <td><span class="status-pill ${statusClass}"><i data-lucide="${statusIcon}"></i>${s.status}</span></td>
@@ -500,8 +500,10 @@
           <td>${s.type}</td>
           <td>${s.dateRange}</td>
           <td>${s.services}</td>
-          <td class="icon-col"><button class="icon-btn" type="button" title="View IEP Document"><i data-lucide="eye"></i></button></td>
-          <td class="icon-col">${respondBtn}</td>
+          <td class="icon-col">
+            <button class="icon-btn" type="button" title="View IEP Document" onclick="openIEP('${s.id}')"><i data-lucide="eye"></i></button>
+            ${respondBtn}
+          </td>
         `;
         tbody.appendChild(tr);
       });
@@ -609,6 +611,20 @@
         approveSec.style.display = 'none'; denySec.style.display = 'block';
         btn.textContent = "Decline Authorization"; btn.onclick = denyAuthorization;
       }
+    }
+
+    // --- OPEN IEP DOCUMENT ---
+    function openIEP(id) {
+      const s = allStudents.find(st => st.id == id);
+      if (!s) return;
+      const params = new URLSearchParams({
+        name: s.first + ' ' + s.last,
+        id: s.id,
+        type: s.type,
+        dates: s.dateRange,
+        services: s.services
+      });
+      window.open('IEP_Document.html?' + params.toString(), '_blank');
     }
 
     // --- SAVE LOGIC (Updates LocalStorage) ---
