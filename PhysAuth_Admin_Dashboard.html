@@ -12,7 +12,7 @@
   <script src="https://unpkg.com/lucide@latest"></script>
 
   <style>
-    /* --- EXACT ORIGINAL CSS --- */
+    /* --- CSS --- */
     :root{ --nav:#0B2E78; --navText:#ffffff; --navUnderline:#FBBF24; --bg:#ffffff; --page:#f6f7fb; --text:#333333; --muted:#6B7280; --line:#E5E7EB; --action:#2963ff; --actionHoverBg:#2963ff; --actionHoverText:#ffffff; --underline:#C7CDD6; --underlineFocus:#2963ff; --pendingText:#586874; --pendingFill:#F3F4F6; --panelRadius:2px; --btnRadius:2px; --max:1320px; --indent:24px; }
     *{ box-sizing:border-box; }
     body{ margin:0; font-family:Roboto, system-ui, -apple-system, Segoe UI, Arial, sans-serif; color:var(--text); background:var(--page); font-size:13px; }
@@ -25,7 +25,6 @@
     .nav a{ color:rgba(255,255,255,.92); text-decoration:none; font-size:12px; font-weight:700; padding:14px 10px 12px; text-transform:uppercase; letter-spacing:.25px; border-bottom:3px solid transparent; white-space:nowrap; }
     .nav a:hover{ color:#fff; background:rgba(255,255,255,.06); }
     .nav a.is-active{ color:#fff; border-bottom-color:var(--navUnderline); }
-    /* Reset Button Style */
     .nav a.reset-btn { color: #ff9999; margin-left: auto; cursor: pointer; }
     .nav a.reset-btn:hover { background: rgba(255,0,0,0.2); color: #fff; }
 
@@ -51,7 +50,6 @@
     .section-content{ padding:12px 0 6px; }
     .is-collapsed .section-content{ display:none; }
     .is-collapsed .chev{ transform:rotate(-90deg); }
-    .qf.is-collapsed + .section-sep { display: none; }
     .qf-inner{ padding-left:var(--indent); }
     .active-filters{ font-size:14px; color:var(--muted); margin:0 0 10px 0; padding-top:8px; }
     .filters-row{ display:flex; align-items:flex-end; gap:18px; flex-wrap:wrap; padding-top:4px; padding-bottom:6px; }
@@ -76,6 +74,8 @@
     table{ width:100%; border-collapse:collapse; font-size:12px; color:var(--text); }
     thead th{ text-align:left; color:var(--muted); font-size:13px; font-weight:700; padding:10px 10px; border-bottom:1px solid var(--line); white-space:nowrap; }
     tbody td{ padding:10px 10px; border-bottom:1px solid var(--line); vertical-align:middle; }
+    
+    /* Status Pills */
     .status-pill{ display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border-radius:999px; font-weight:700; font-size:11px; white-space:nowrap; line-height:1; }
     .status-pill .lucide{ width:16px; height:16px; stroke-width:2; display:block; }
     .pending{ color:var(--pendingText); background:var(--pendingFill); }
@@ -83,7 +83,8 @@
     .denied{ color:#B91C1C; background:#FEE2E2; }
     .resubmitted{ color:#B45309; background:#FEF3C7; }
     .returned{ color:#6B21A8; background:#F3E8FF; }
-    .superseded{ color:#334155; background:#E2E8F0; }
+    .superseded{ color:#475569; background:#E2E8F0; opacity: 0.8; } /* Gray and slightly dimmed */
+    
     .icon-col{ text-align:center; white-space:nowrap; width:1%; }
     .icon-btn{ border:none; background:transparent; cursor:pointer; color:#4B5563; padding:4px; border-radius:8px; }
     .icon-btn:hover{ background:#F3F4F6; color:#111827; }
@@ -131,13 +132,7 @@
       <nav class="nav" aria-label="Primary navigation">
         <a href="#" onclick="return false;">Main Menu</a>
         <a href="#" onclick="return false;">My Account</a>
-        <a href="#" onclick="return false;">Wizards</a>
-        <a href="#" onclick="return false;">Students</a>
-        <a href="#" onclick="return false;">Parents</a>
         <a class="is-active" href="#" onclick="return false;">Physician Authorization</a>
-        <a href="#" onclick="return false;">Students</a>
-        <a href="#" onclick="return false;">Tools</a>
-        <a href="#" onclick="return false;">Reports</a>
         <a href="#" onclick="return false;">Admin/System</a>
         <a href="#" onclick="return false;">Log Off</a>
         <a href="PhysAuth_Physician_Dashboard.html" style="color:#FBBF24;">Switch to Physician</a>
@@ -221,6 +216,9 @@
                       <option>Pending</option>
                       <option>Signed</option>
                       <option>Denied</option>
+                      <option>Resubmitted</option>
+                      <option>Returned</option>
+                      <option>Superseded</option>
                     </select>
                   </div>
                 </div>
@@ -252,8 +250,6 @@
             </div>
           </div>
         </div>
-
-        <div class="section-sep" aria-hidden="true" style="margin-top:10px;"></div>
 
         <div class="results-toolbar">
           <div class="spacer"></div>
@@ -460,7 +456,7 @@
     let currentPage = 1;
 
     function sortStudents(data) {
-      // Logic: Denied (needs attention), Pending, Resubmitted, Signed, Returned
+      // Logic: Denied (needs attention), Pending, Resubmitted, Signed, Returned, Superseded
       const statusRank = { "Denied": 1, "Pending": 2, "Resubmitted": 3, "Signed": 4, "Returned": 5, "Superseded": 99 };
       data.sort((a, b) => {
         const rA = statusRank[a.status] || 99;
@@ -495,6 +491,7 @@
       renderTable();
     }
 
+    // --- TABLE RENDER LOGIC ---
     function renderTable() {
       const tbody = document.getElementById('tableBody');
       tbody.innerHTML = '';
@@ -512,6 +509,29 @@
         else if (s.status === 'Returned') { statusClass = 'returned'; statusIcon = 'corner-up-left'; }
         else if (s.status === 'Superseded') { statusClass = 'superseded'; statusIcon = 'file-stack'; }
 
+        // BUTTON LOGIC
+        // If 'Denied' -> Pencil opens Resolve Modal
+        // If 'Returned' -> File-Plus simulates Teacher creating new IEP
+        // If 'Superseded' -> Buttons disabled or Read Only
+        // Everyone gets View IEP / View Details
+
+        let actionBtn = '';
+        if (s.status === 'Denied') {
+            // Resolve Denial
+            actionBtn = `<button class="icon-btn" type="button" title="Resolve Denial" onclick="openModal('${s.id}')"><i data-lucide="pencil"></i></button>`;
+        } 
+        else if (s.status === 'Returned') {
+            // Simulate Teacher Creation
+            actionBtn = `<button class="icon-btn" type="button" title="Simulate Teacher: Create New Revision" onclick="simulateNewIEP('${s.id}')" style="color:#2563EB;"><i data-lucide="file-plus-2"></i></button>`;
+        } 
+        else if (s.status === 'Superseded') {
+             actionBtn = `<span style="color:#ccc">--</span>`;
+        }
+        else {
+            // Default Edit (e.g. modify before sending) or just Read Only
+             actionBtn = `<button class="icon-btn" type="button" title="Edit/Resolve" onclick="openModal('${s.id}')"><i data-lucide="pencil"></i></button>`;
+        }
+
         tr.innerHTML = `
           <td><span class="status-pill ${statusClass}"><i data-lucide="${statusIcon}"></i>${s.status}</span></td>
           <td>${s.first}</td>
@@ -525,7 +545,7 @@
           <td class="icon-col">
             <button class="icon-btn" type="button" title="View IEP"><i data-lucide="eye"></i></button>
             <button class="icon-btn" type="button" title="View Details" onclick="openDetailsModal('${s.id}')"><i data-lucide="file-text"></i></button>
-            <button class="icon-btn" type="button" title="Actions" onclick="openModal('${s.id}')"><i data-lucide="pencil"></i></button>
+            ${actionBtn}
           </td>
         `;
         tbody.appendChild(tr);
@@ -599,7 +619,8 @@
 
     // --- DETAILS MODAL (View Only) ---
     function openDetailsModal(id) {
-      const s = allStudents.find(st => st.id === id);
+      // Loose equality to handle string vs number ID
+      const s = allStudents.find(st => st.id == id);
       if(!s) return;
       document.getElementById('dName').textContent = `${s.first} ${s.last}`;
       document.getElementById('dID').textContent = s.id;
@@ -626,15 +647,14 @@
     // --- ACTION MODAL (Resubmit/Return) ---
     function openModal(id){
       currentStudentId = id;
-      const s = allStudents.find(st => st.id === id);
+      const s = allStudents.find(st => st.id == id);
       if(!s) return;
       document.getElementById('mName').textContent = `${s.first} ${s.last}`;
       document.getElementById('mID').textContent = s.id;
       document.getElementById('mDate').textContent = s.dateRange;
-      document.getElementById('mDenialReason').textContent = s.denialReason || "--"; // Reason only if exists
+      document.getElementById('mDenialReason').textContent = s.denialReason || "--"; 
       
       document.getElementById('respondModal').style.display = 'flex';
-      // Reset Admin Action Form
       const radios = document.getElementsByName('adminAction');
       radios.forEach(r => r.checked = false);
       document.getElementById('descResubmit').style.display = 'none';
@@ -663,16 +683,49 @@
       }
 
       closeModal();
-      const s = allStudents.find(st => st.id === currentStudentId);
+      const s = allStudents.find(st => st.id == currentStudentId);
       if (s) {
         if (action === 'resubmit') {
           s.status = 'Resubmitted';
         } else {
-          s.status = 'Returned'; // Becomes "Returned" for now (or Superseded per previous chat)
+          s.status = 'Returned'; 
         }
-        saveData(); // <--- Syncs with Physician
+        saveData(); // Syncs with Physician
         applyFilters();
       }
+    }
+
+    // --- SIMULATE NEW IEP LOGIC (The "File Plus" Button) ---
+    function simulateNewIEP(oldId) {
+        console.log("Clicked simulate on ID:", oldId);
+        // Loose equality to handle string vs number mismatch
+        const oldIndex = allStudents.findIndex(s => s.id == oldId);
+        if (oldIndex === -1) {
+            console.error("Could not find student with ID:", oldId);
+            return;
+        }
+
+        // 1. Mark old record as SUPERSEDED
+        allStudents[oldIndex].status = "Superseded";
+
+        // 2. Create the NEW "Revision" record (Clone and clean)
+        const newRecord = JSON.parse(JSON.stringify(allStudents[oldIndex]));
+        
+        // Generate new ID (String format to match)
+        newRecord.id = Math.floor(100000 + Math.random() * 900000).toString(); 
+        newRecord.status = "Pending"; 
+        newRecord.type = "Revision"; 
+        newRecord.denialReason = null; 
+        newRecord.responseDate = null;
+        
+        // Add to top of list
+        allStudents.unshift(newRecord);
+
+        // 3. Save and Refresh
+        saveData(); 
+        applyFilters(); 
+
+        alert(`New Revision Created!\n\nOld ID ${oldId} is now Superseded.\nNew ID ${newRecord.id} is Pending.`);
     }
 
     // Start
