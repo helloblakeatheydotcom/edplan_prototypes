@@ -51,7 +51,10 @@
     .is-collapsed .chev{ transform:rotate(-90deg); }
     .qf.is-collapsed + .section-sep { display: none; }
     .qf-inner{ padding-left:var(--indent); }
-    .active-filters{ font-size:14px; color:var(--muted); margin:0 0 10px 0; padding-top:8px; }
+    
+    /* UPDATED: Active filters moves to toolbar, so flex:1 takes available space */
+    .active-filters{ font-size:13px; color:var(--muted); margin:0; padding-bottom:0; flex-grow:1; display:flex; align-items:center; }
+    
     .filters-row{ display:flex; align-items:flex-end; gap:18px; flex-wrap:wrap; padding-top:4px; padding-bottom:6px; }
     .field{ min-width:170px; }
     .label{ font-size:14px; color:var(--muted); font-weight:700; margin-bottom:6px; }
@@ -62,9 +65,12 @@
     select.underline-select{ appearance:none; }
     .multiselect-menu { position: absolute; top: 100%; left: 0; width: 100%; background: #fff; border: 1px solid var(--line); box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-radius: 4px; padding: 8px; z-index: 50; display: flex; flex-direction: column; gap: 6px; }
     .multiselect-menu label { display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer; }
-    .results-toolbar{ display:flex; align-items:flex-end; gap:16px; margin-top:12px; margin-bottom:6px; }
-    .results-toolbar .spacer{ flex:1; }
-    .search{ min-width:260px; display:flex; flex-direction:column; gap:0; padding-bottom:6px; }
+    
+    /* UPDATED: Toolbar Layout */
+    .results-toolbar{ display:flex; align-items:flex-end; gap:16px; margin-top:12px; margin-bottom:6px; min-height: 40px; }
+    /* .spacer removed in HTML, rely on active-filters flex-grow */
+    
+    .search{ min-width:260px; display:flex; flex-direction:column; gap:0; padding-bottom:6px; margin-left: auto; /* Pushes right if filters empty */ }
     .search label{ font-size:12px; color:var(--muted); font-weight:500; margin:0; line-height:1.1; }
     .searchbox{ position:relative; }
     .searchbox .underline-input{ padding-right:24px; }
@@ -79,7 +85,7 @@
     .pending{ color:var(--pendingText); background:var(--pendingFill); }
     .signed{ color:#127C49; background:#E6F4EA; }
     .denied{ color:#B91C1C; background:#FEE2E2; }
-    .resubmitted{ color:#B45309; background:#FEF3C7; } /* Added Resubmitted color */
+    .resubmitted{ color:#B45309; background:#FEF3C7; } 
     .superseded{ color:#334155; background:#E2E8F0; }
     .icon-col{ width:72px; text-align:center; }
     .icon-btn{ border:none; background:transparent; cursor:pointer; color:#4B5563; padding:4px; border-radius:8px; }
@@ -176,9 +182,6 @@
 
           <div id="quickFiltersContent" class="section-content">
             <div class="qf-inner">
-              <div class="active-filters">
-                Active Filters: <strong>Custom IEP Date Range</strong>: 01/01/20XX-12/31/20XX
-              </div>
               <div class="filters-row" aria-label="Quick Filters fields">
                 <div class="field">
                   <div class="label">Status</div>
@@ -236,7 +239,8 @@
         <div class="section-sep" aria-hidden="true" style="margin-top:10px;"></div>
 
         <div class="results-toolbar">
-          <div class="spacer"></div>
+          <div id="activeFiltersDisplay" class="active-filters" style="display:none;"></div>
+          
           <div class="search">
             <label for="searchInput">Search:</label>
             <div class="searchbox">
@@ -446,6 +450,18 @@
         }
         return true;
       });
+
+      // Update Active Filters Display
+      const activeParts = [];
+      if (fStatus) activeParts.push(`Status = ${fStatus}`);
+      if (fType) activeParts.push(`Type = ${fType}`);
+      if (fServiceOptions.length > 0) activeParts.push(`Services = ${fServiceOptions.join(', ')}`);
+      if (fYear) activeParts.push(`Year = ${fYear}`);
+      if (fSearch) activeParts.push(`Search = "${fSearch}"`);
+
+      const displayEl = document.getElementById('activeFiltersDisplay');
+      displayEl.style.display = activeParts.length > 0 ? 'flex' : 'none';
+      displayEl.innerHTML = activeParts.length > 0 ? `Active Filters: <strong>&nbsp;${activeParts.join(', ')}</strong>` : '';
 
       sortStudents(currentData);
       currentPage = 1;

@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Individualized Education Program</title>
+    <style>
+        body {
+            background-color: #525659; /* PDF Viewer Gray */
+            font-family: 'Times New Roman', Times, serif; /* Formal document font */
+            margin: 0;
+            padding: 40px 0;
+            display: flex;
+            justify-content: center;
+        }
+        .paper {
+            background-color: white;
+            width: 8.5in;
+            min-height: 11in;
+            padding: 0.75in;
+            box-shadow: 0 0 15px rgba(0,0,0,0.5);
+            box-sizing: border-box;
+            color: #000;
+        }
+        
+        /* Header */
+        .doc-header {
+            text-align: center;
+            border-bottom: 2px solid #000;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .doc-header h1 { margin: 0; font-size: 20px; text-transform: uppercase; letter-spacing: 1px; }
+        .doc-header h2 { margin: 5px 0 0; font-size: 14px; font-weight: normal; }
+
+        /* Grid for Student Info */
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px 40px;
+            margin-bottom: 30px;
+            font-family: Arial, sans-serif; /* Readable font for data */
+            font-size: 12px;
+        }
+        .field-box {
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 2px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .label { font-weight: bold; color: #444; }
+        .value { font-weight: bold; color: #000; }
+
+        /* Sections */
+        .section-title {
+            background-color: #eee;
+            border: 1px solid #000;
+            padding: 5px 10px;
+            font-weight: bold;
+            font-family: Arial, sans-serif;
+            font-size: 13px;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+        .content-block {
+            font-size: 14px;
+            line-height: 1.4;
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+
+        /* Services Table */
+        table { width: 100%; border-collapse: collapse; font-family: Arial, sans-serif; font-size: 12px; margin-top: 10px; }
+        th { border: 1px solid #000; padding: 6px; background: #f9f9f9; text-align: left; }
+        td { border: 1px solid #000; padding: 6px; vertical-align: top; }
+
+        /* Authorization Block */
+        .auth-block {
+            margin-top: 50px;
+            border: 2px solid #000;
+            padding: 15px;
+            page-break-inside: avoid;
+        }
+        .auth-text { font-size: 12px; font-style: italic; margin-bottom: 30px; }
+        .sig-line { border-bottom: 1px solid #000; width: 60%; margin-top: 40px; }
+    </style>
+</head>
+<body>
+
+    <div class="paper">
+        <div class="doc-header">
+            <h1>Individualized Education Program (IEP)</h1>
+            <h2>CONFIDENTIAL STUDENT RECORD</h2>
+        </div>
+
+        <div class="info-grid">
+            <div class="field-box"><span class="label">Student Name:</span> <span class="value" id="pName">--</span></div>
+            <div class="field-box"><span class="label">State ID:</span> <span class="value" id="pID">--</span></div>
+            <div class="field-box"><span class="label">IEP Type:</span> <span class="value" id="pType">--</span></div>
+            <div class="field-box"><span class="label">Meeting Date:</span> <span class="value">10/12/2024</span></div>
+            <div class="field-box"><span class="label">Duration Dates:</span> <span class="value" id="pDates">--</span></div>
+            <div class="field-box"><span class="label">Grade:</span> <span class="value">04</span></div>
+        </div>
+
+        <div class="section-title">SECTION 1: PRESENT LEVELS OF ACADEMIC ACHIEVEMENT</div>
+        <div class="content-block">
+            The student demonstrates strengths in verbal communication and auditory processing. However, significant delays are noted in fine motor skills and sensory regulation, which impact the student's ability to participate fully in classroom writing activities. 
+        </div>
+
+        <div class="section-title">SECTION 2: MEASURABLE ANNUAL GOALS</div>
+        <div class="content-block">
+            <strong>Goal 1:</strong> By the end of the IEP period, given a sensory diet and verbal prompts, the student will improve self-regulation skills to maintain attention to task for 15 minutes in 4 out of 5 opportunities.<br><br>
+            <strong>Goal 2:</strong> By the end of the IEP period, the student will produce legible handwriting for 3 sentences with correct spacing and alignment in 3 out of 5 work samples.
+        </div>
+
+        <div class="section-title">SECTION 3: SPECIAL EDUCATION AND RELATED SERVICES</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Service Type</th>
+                    <th>Frequency</th>
+                    <th>Location</th>
+                    <th>Start/End Date</th>
+                </tr>
+            </thead>
+            <tbody id="servicesBody">
+                </tbody>
+        </table>
+
+        <div class="auth-block">
+            <div style="font-weight:bold; margin-bottom:10px; font-family:Arial;">PHYSICIAN AUTHORIZATION REQUIREMENT</div>
+            <div class="auth-text">
+                The services listed above are recommended as necessary for the student to benefit from their educational program. Some services may be billable to Medicaid and require a Physician, Physician Assistant, or Nurse Practitioner's authorization confirming medical necessity.
+            </div>
+            
+            <div style="display:flex; justify-content:space-between; margin-top:20px;">
+                <div style="width:45%;">
+                    <div style="border-bottom:1px solid #000; height:30px;"></div>
+                    <div style="font-size:10px; margin-top:5px;">Physician Signature</div>
+                </div>
+                <div style="width:45%;">
+                    <div style="border-bottom:1px solid #000; height:30px;"></div>
+                    <div style="font-size:10px; margin-top:5px;">Date</div>
+                </div>
+            </div>
+        </div>
+
+        <div style="text-align:center; margin-top:40px; font-size:10px; color:#888;">
+            Generated by EdPlan - Page 1 of 1
+        </div>
+    </div>
+
+    <script>
+        // Reads the URL ?name=X&id=Y... and populates the page
+        const params = new URLSearchParams(window.location.search);
+        
+        document.getElementById('pName').textContent = params.get('name') || "Unknown Student";
+        document.getElementById('pID').textContent = params.get('id') || "000000";
+        document.getElementById('pType').textContent = params.get('type') || "Annual";
+        document.getElementById('pDates').textContent = params.get('dates') || "--";
+
+        // Handle Services List
+        const rawServices = params.get('services') || "";
+        const tbody = document.getElementById('servicesBody');
+        
+        if(rawServices) {
+            const list = rawServices.split(',');
+            list.forEach(svc => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${svc.trim()}</td>
+                    <td>30 min / Weekly</td>
+                    <td>Special Education Setting</td>
+                    <td>${params.get('dates') ? params.get('dates').split('–')[0] : '08/01/2024'}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        } else {
+            tbody.innerHTML = '<tr><td colspan="4">No services listed</td></tr>';
+        }
+    </script>
+</body>
+</html>
